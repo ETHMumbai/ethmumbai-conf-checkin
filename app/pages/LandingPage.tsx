@@ -1,17 +1,5 @@
 "use client";
 
-import Hero from "@/components/Hero";
-import Navbar from "@/components/Navbar";
-import FAQ from "@/components/FAQ";
-import Footer from "@/components/Footer";
-import Stats from "@/components/Stats";
-import Overview from "@/components/Overview";
-import Sponsors from "@/components/Sponsors";
-import Partners from "@/components/Partners";
-import AnnouncementBar from "@/components/AnnouncementBar";
-import Speakers from "@/components/Speakers";
-// import Speakers from "@/components/hackathon/Speakers";
-import ClosingCTA from "@/components/ClosingCTA";
 import CheckIn from "@/components/CheckIn";
 import { SessionProvider } from "next-auth/react";
 
@@ -26,21 +14,10 @@ export default function LandingPage() {
         </p>
       </section>
       <div className="flex min-h-screen flex-col bg-black font-sans">
-        {/* <AnnouncementBar /> */}
-        {/* <Navbar /> */}
         <main className="flex min-h-screen w-full flex-col">
-          {/* <Hero /> */}
           <SessionProvider>
             <CheckIn />
           </SessionProvider>
-          {/* <Stats />
-          <Overview />
-          <Speakers />
-          <Sponsors />
-          <Partners />
-          <FAQ type="general" /> */}
-          {/* <ClosingCTA /> */}
-          {/* <Footer /> */}
         </main>
       </div>
     </>
