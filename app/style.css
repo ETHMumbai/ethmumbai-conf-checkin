@@ -1,0 +1,21 @@
+.hero-blur {
+  position: absolute;
+  width: 288px;
+  height: 288px;
+  left: 80px;
+  top: 80px;
+  background: #0A0A0A;
+  filter: blur(64px);
+  border-radius: 9999999px; /* equivalent to full circle */
+}
+
+.hero-blur-2 {
+  position: absolute;
+  width: 106px;
+  height: 93px;
+  left: 899px;
+  top: 114px;
+  background: #0A0A0A;
+  filter: blur(32px);
+  border-radius: 9999999px;
+}
