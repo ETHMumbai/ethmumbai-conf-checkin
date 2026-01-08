@@ -12,6 +12,8 @@ import AnnouncementBar from "@/components/AnnouncementBar";
 import Speakers from "@/components/Speakers";
 // import Speakers from "@/components/hackathon/Speakers";
 import ClosingCTA from "@/components/ClosingCTA";
+import CheckIn from "@/components/CheckIn";
+import { SessionProvider } from "next-auth/react";
 
 export default function LandingPage() {
   return (
@@ -24,18 +26,21 @@ export default function LandingPage() {
         </p>
       </section>
       <div className="flex min-h-screen flex-col bg-black font-sans">
-        <AnnouncementBar />
-        <Navbar />
+        {/* <AnnouncementBar /> */}
+        {/* <Navbar /> */}
         <main className="flex min-h-screen w-full flex-col">
-          <Hero />
-          <Stats />
+          {/* <Hero /> */}
+          <SessionProvider>
+            <CheckIn />
+          </SessionProvider>
+          {/* <Stats />
           <Overview />
-          <Speakers/>
+          <Speakers />
           <Sponsors />
           <Partners />
-          <FAQ type="general"/>
+          <FAQ type="general" /> */}
           {/* <ClosingCTA /> */}
-          <Footer />
+          {/* <Footer /> */}
         </main>
       </div>
     </>
