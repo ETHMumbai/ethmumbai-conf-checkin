@@ -99,6 +99,7 @@ useEffect(() => {
       if (!res.ok) throw new Error("Verification failed");
 
       const data = await res.json();
+      setError(null);
       setVerifyResult(data);
 
     } catch (err) {
