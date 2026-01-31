@@ -39,7 +39,7 @@ export default function CheckIn() {
   }
 
   return (
-    <div className="min-h-screen bg-white flex items-center justify-center px-4">
+    <div className="min-h-screen bg-white flex items-center justify-center px-4 overflow-x-hidden">
       <div className="w-full max-w-md sm:max-w-lg text-center">
         {/* Logo */}
         <div className="flex justify-center mb-16">
@@ -75,82 +75,82 @@ export default function CheckIn() {
           )}
 
           {/* ================= AUTHENTICATED ================= */}
-         {session ? (
-  <div className="flex flex-col gap-8">
-    {/* ================= MENU ================= */}
-    {mode === "menu" && (
-      <div className="flex flex-col items-center gap-6">
-        <div className="w-full max-w-xs flex flex-col gap-3">
-          <button
-            onClick={() => setMode("email")}
-            className="w-full rounded-xl bg-black px-4 py-4 text-sm font-medium text-white hover:bg-neutral-800 transition"
-          >
-            Check-in by Email or Ticket Code
-          </button>
-          <p className="text-xs text-neutral-500 text-center">
-            Search attendee using registered email or ticket code
-          </p>
-        </div>
+          {session ? (
+            <div className="flex flex-col gap-8">
+              {/* ================= MENU ================= */}
+              {mode === "menu" && (
+                <div className="flex flex-col items-center gap-6">
+                  <div className="w-full max-w-xs flex flex-col gap-3">
+                    <button
+                      onClick={() => setMode("email")}
+                      className="w-full rounded-xl bg-black px-4 py-4 text-sm font-medium text-white hover:bg-neutral-800 transition"
+                    >
+                      Check-in by Email or Ticket Code
+                    </button>
+                    <p className="text-xs text-neutral-500 text-center">
+                      Search attendee using registered email or ticket code
+                    </p>
+                  </div>
 
-        <div className="w-full max-w-xs flex flex-col gap-3">
-          <button
-            onClick={() => setMode("qr")}
-            className="w-full rounded-xl bg-neutral-100 px-4 py-4 text-sm font-medium text-black hover:bg-neutral-200 transition"
-          >
-            Check-in by QR
-          </button>
-          <p className="text-xs text-neutral-500 text-center">
-            Scan attendee QR code at entry
-          </p>
-        </div>
-      </div>
-    )}
+                  <div className="w-full max-w-xs flex flex-col gap-3">
+                    <button
+                      onClick={() => setMode("qr")}
+                      className="w-full rounded-xl bg-neutral-100 px-4 py-4 text-sm font-medium text-black hover:bg-neutral-200 transition"
+                    >
+                      Check-in by QR
+                    </button>
+                    <p className="text-xs text-neutral-500 text-center">
+                      Scan attendee QR code at entry
+                    </p>
+                  </div>
+                </div>
+              )}
 
-    {/* ================= EMAIL MODE ================= */}
-    {mode === "email" && (
-      <div className="w-full flex flex-col items-center gap-6">
-        <div className="w-full max-w-sm">
-          <h2 className="text-sm font-medium text-neutral-700 mb-2 text-center">
-            Email / Ticket Code Check-In
-          </h2>
+              {/* ================= EMAIL MODE ================= */}
+              {mode === "email" && (
+                <div className="w-full flex flex-col items-center gap-6">
+                  <div className="w-full max-w-sm">
+                    <h2 className="text-sm font-medium text-neutral-700 mb-2 text-center">
+                      Email / Ticket Code Check-In
+                    </h2>
 
-          <div className="rounded-xl bg-neutral-50 p-4 sm:p-6">
-            <CheckInByEmail name={session.user?.name} />
-          </div>
-        </div>
+                    <div className="rounded-xl bg-neutral-50 p-4 sm:p-6">
+                      <CheckInByEmail name={session.user?.name} />
+                    </div>
+                  </div>
 
-        <button
-          onClick={() => setMode("menu")}
-          className="text-sm text-neutral-500 hover:text-black transition"
-        >
-          ← Back to check-in options
-        </button>
-      </div>
-    )}
+                  <button
+                    onClick={() => setMode("menu")}
+                    className="text-sm text-neutral-500 hover:text-black transition"
+                  >
+                    ← Back to check-in options
+                  </button>
+                </div>
+              )}
 
-    {/* ================= QR MODE ================= */}
-    {mode === "qr" && (
-      <div className="w-full flex flex-col items-center gap-6">
-        <div className="w-full max-w-sm">
-          <h2 className="text-sm font-medium text-neutral-700 mb-2 text-center">
-            QR Code Check-In
-          </h2>
+              {/* ================= QR MODE ================= */}
+              {mode === "qr" && (
+                <div className="w-full flex flex-col items-center gap-6">
+                  <div className="w-full max-w-sm">
+                    <h2 className="text-sm font-medium text-neutral-700 mb-2 text-center">
+                      QR Code Check-In
+                    </h2>
 
-          <div className="rounded-xl bg-neutral-50 p-4 sm:p-6">
-            <CheckInByQR name={session.user?.name} />
-          </div>
-        </div>
+                    <div className="rounded-xl bg-neutral-50 p-4 sm:p-6">
+                      <CheckInByQR name={session.user?.name} />
+                    </div>
+                  </div>
 
-        <button
-          onClick={() => setMode("menu")}
-          className="text-sm text-neutral-500 hover:text-black transition"
-        >
-          ← Back to check-in options
-        </button>
-      </div>
-    )}
-  </div>
-) : (
+                  <button
+                    onClick={() => setMode("menu")}
+                    className="text-sm text-neutral-500 hover:text-black transition"
+                  >
+                    ← Back to check-in options
+                  </button>
+                </div>
+              )}
+            </div>
+          ) : (
 
             /* ================= UNAUTHENTICATED ================= */
             <div className="flex flex-col items-center gap-6">
