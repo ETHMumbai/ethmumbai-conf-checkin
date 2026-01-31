@@ -3,175 +3,186 @@
 import { useEffect, useRef, useState } from "react";
 import { Html5Qrcode } from "html5-qrcode";
 
-type CheckInByEmailProps = {
+type CheckInByQRProps = {
   name?: string | null;
 };
-export default function CheckInByQR({ name }: CheckInByEmailProps) {
+
+export default function CheckInByQR({ name }: CheckInByQRProps) {
   const scannerRef = useRef<Html5Qrcode | null>(null);
   const isRunningRef = useRef(false);
+  const lockRef = useRef(false);
+  const initializedRef = useRef(false); // StrictMode guard only
 
   const [verifyResult, setVerifyResult] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const [scanned, setScanned] = useState(false);
 
-useEffect(() => {
-  if (verifyResult) return;
+  /* ================= START SCANNER ================= */
+  const startScanner = async () => {
+    if (scannerRef.current || isRunningRef.current) return;
 
-  // Prevent multiple initializations
-  if (scannerRef.current) return;
+    const scanner = new Html5Qrcode("qr-reader");
+    scannerRef.current = scanner;
 
-  const scanner = new Html5Qrcode("qr-reader");
-  scannerRef.current = scanner;
+    try {
+      await scanner.start(
+        { facingMode: "environment" },
+        { fps: 10, qrbox: 250 },
+        (decodedText) => {
+          if (lockRef.current) return;
+          lockRef.current = true;
+          verifyByQrUrl(decodedText);
+        },
+        () => { }
+      );
 
-  scanner
-    .start(
-      { facingMode: "environment" },
-      { fps: 10, qrbox: 250 },
-      async (decodedText) => {
-        if (scanned) return;
-
-        setScanned(true);
-        await verifyByQrUrl(decodedText);
-      },
-      () => {
-        // required by TS, ignore scan errors
-      }
-    )
-    .then(() => {
       isRunningRef.current = true;
-    })
-    .catch((err) => {
-      console.error(err);
+    } catch {
       setError("Camera permission denied or unavailable");
-    });
-
-  return () => {
-    if (scannerRef.current && isRunningRef.current) {
-      scannerRef.current
-        .stop()
-        .catch(() => {});
-      scannerRef.current = null;
-      isRunningRef.current = false;
     }
   };
-}, [verifyResult]); // ❗ ONLY depend on verifyResult
 
-useEffect(() => {
-  if (verifyResult?.ok && scannerRef.current && isRunningRef.current) {
-    console.log("🛑 Check-in successful → stopping camera");
+  /* ================= INIT (STRICT MODE SAFE) ================= */
+  useEffect(() => {
+    if (initializedRef.current) return;
+    initializedRef.current = true;
 
-    scannerRef.current
-      .stop()
-      .then(() => {
-        console.log("📷 Camera stopped");
-      })
-      .catch((err) => {
-        console.warn("⚠️ Error stopping camera:", err);
-      })
-      .finally(() => {
-        isRunningRef.current = false;
-        scannerRef.current = null;
-      });
-  }
-}, [verifyResult]);
+    startScanner();
 
+    return () => stopScanner();
+  }, []);
 
-
+  /* ================= VERIFY ================= */
   const verifyByQrUrl = async (url: string) => {
     try {
       setLoading(true);
       setError(null);
 
-      console.log("📷 QR URL scanned:", url);
+      const ticketCode = url.split("/").pop();
+      if (!ticketCode) throw new Error();
 
-    
-    const ticketCode = url.split("/").pop();
-
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/t/${ticketCode}?checkedInBy=${encodeURIComponent(name || 'team')}`, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          "x-api-key": process.env.NEXT_PUBLIC_API_KEY || "",
-        },
-      });
-
-      if (!res.ok) throw new Error("Verification failed");
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/t/${ticketCode}?checkedInBy=${encodeURIComponent(
+          name || "team"
+        )}`,
+        {
+          headers: {
+            "x-api-key": process.env.NEXT_PUBLIC_API_KEY || "",
+          },
+        }
+      );
 
       const data = await res.json();
-      setError(null);
+      if (!res.ok || !data?.ok) throw new Error();
+
+      stopScanner();
       setVerifyResult(data);
-
-    } catch (err) {
-  console.error("🔥 QR verify failed:", err);
-
-  setError("Invalid or already used QR");
-  setScanned(false);
-
-  // 🛑 stop camera on error
-  if (scannerRef.current && isRunningRef.current) {
-    scannerRef.current
-      .stop()
-      .catch(() => {});
-    scannerRef.current = null;
-    isRunningRef.current = false;
-  }
-}
- finally {
+    } catch {
+      stopScanner();
+      setError("Invalid or already used QR");
+    } finally {
       setLoading(false);
     }
   };
 
- const resetForNextParticipant = () => {
-  setVerifyResult(null);
-  setError(null);
-  setLoading(false);
-  setScanned(false);
+  /* ================= STOP ================= */
+  const stopScanner = () => {
+    if (scannerRef.current && isRunningRef.current) {
+      scannerRef.current.stop().catch(() => { });
+    }
+    scannerRef.current = null;
+    isRunningRef.current = false;
+  };
 
-  // allow scanner to re-init
-  scannerRef.current = null;
-};
+  /* ================= RESET ================= */
+  const reset = async () => {
+    stopScanner();
+    lockRef.current = false;
+    setVerifyResult(null);
+    setError(null);
+    setLoading(false);
 
+    // 🔥 restart camera
+    await startScanner();
+  };
 
+  /* ================= UI ================= */
   return (
-    <div className="flex flex-col items-center gap-4">
-      {!verifyResult && !error && (
-  <div
-    id="qr-reader"
-    className="w-72 border rounded-lg overflow-hidden"
-  />
-)}
+    <div className="flex flex-col items-center gap-6 w-full">
+      {/* CAMERA (always mounted) */}
+      <div
+        id="qr-reader"
+        className={`w-72 rounded-xl overflow-hidden border ${verifyResult || error ? "hidden" : "block"
+          }`}
+      />
 
+      {loading && (
+        <p className="text-sm text-neutral-600">Checking ticket…</p>
+      )}
 
-      {loading && <p className="text-black">Checking ticket…</p>}
-      {error && <p className="text-red-600">{error}</p>}
+      {/* ERROR */}
+      {error && (
+        <div className="w-full max-w-md rounded-xl border border-red-200 bg-red-50 p-5 text-center space-y-4">
+          <p className="text-red-700 font-medium">{error}</p>
+          <button
+            onClick={reset}
+            className="rounded-lg bg-black px-5 py-2 text-sm text-white hover:bg-neutral-800"
+          >
+            Scan another QR
+          </button>
+        </div>
+      )}
 
+      {/* SUCCESS */}
       {verifyResult?.ok && (
-        <div className="p-4 border-l-4 border-green-600 bg-green-50 text-black rounded-lg space-y-1 w-full max-w-md">
-          <h3 className="text-lg font-semibold text-green-700">
-            ✅ Check-in Successful
-          </h3>
+        <div className="w-full max-w-md rounded-2xl bg-green-50 px-6 py-6 space-y-5 shadow-sm">
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-green-600 text-white text-lg">
+              ✓
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold text-green-800">
+                Check-in successful
+              </h3>
+              <p className="text-sm text-green-700">
+                Attendee verified and checked in
+              </p>
+            </div>
+          </div>
 
-          <p>
-            Hi <strong>{verifyResult.participantName}</strong>, welcome to
-            <strong> ETHMumbai</strong>!
+          <div className="h-px bg-green-200" />
+
+          <p className="text-sm text-neutral-700">
+            <strong>{verifyResult.participantName}</strong> is checked in
           </p>
 
-          <p>
-            🎟️ Ticket Type: <strong>{verifyResult.ticketType}</strong>
-          </p>
+          {/* Details */}
+          <div className="grid grid-cols-1 gap-3 text-sm">
+            <div className="flex justify-between">
+              <span className="text-neutral-500">Ticket type</span>
+              <span className="font-medium text-black">
+                {verifyResult.ticketType}
+              </span>
+            </div>
 
-          <p>
-            🧾 Ticket Code: <strong>{verifyResult.ticketCode}</strong>
-          </p>
+            <div className="flex justify-between">
+              <span className="text-neutral-500">Ticket code</span>
+              <span className="font-mono text-black">
+                {verifyResult.ticketCode}
+              </span>
+            </div>
 
-          <p>
-            💳 Paid by: <strong>{verifyResult.buyerName}</strong>
-          </p>
+            <div className="flex justify-between">
+              <span className="text-neutral-500">Paid by</span>
+              <span className="font-medium text-black">
+                {verifyResult.buyerName}
+              </span>
+            </div>
+          </div>
 
           <button
-            onClick={resetForNextParticipant}
-            className="mt-3 px-5 py-2 bg-black text-white rounded-lg hover:bg-gray-800"
+            onClick={reset}
+            className="w-full rounded-xl bg-black py-3 text-sm font-medium text-white hover:bg-neutral-800"
           >
             Check in next participant
           </button>
