@@ -16,6 +16,7 @@ const inter = Inter_Tight({
 // };
 export const metadata: Metadata = {
   title: "ETHMumbai 2026",
+  manifest: "/manifest.json",
   description:
     "BEST Conference & Hackathon in Mumbai. 12 – 15 March 2026 in Mumbai",
 

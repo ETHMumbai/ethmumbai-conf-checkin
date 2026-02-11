@@ -1,0 +1,21 @@
+{
+  "name": "ETHMumbai Conference Check-in",
+  "short_name": "ETHMumbai",
+  "description": "ETHMumbai conference attendee check-in app",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#E2231A",
+  "icons": [
+    {
+      "src": "/favicon.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/favicon.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
