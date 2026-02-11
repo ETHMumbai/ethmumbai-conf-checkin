@@ -65,7 +65,7 @@ export default function CheckInByEmail({ name }: CheckInByEmailProps) {
 
       {/* ✅ INPUT + SUBMIT (only before ticket is fetched) */}
       {!ticket && !verifyResult && (
-        <div className="flex gap-2">
+        <div className="flex flex-col sm:flex-row gap-2">
           <input
             type="email"
             placeholder="Enter email"
